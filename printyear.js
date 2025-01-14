@@ -162,7 +162,7 @@ async function doIt() {
 			gigsPerDayDates: Object.keys(groups),
 			gigsPerDay: groupArrays
 		}));
-		await fs.copyFile("views/style.css", "build/style.css");
+		await fs.copyFile("static/style.css", "build/style.css");
 }
 
 doIt()
