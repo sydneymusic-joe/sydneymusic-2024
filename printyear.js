@@ -151,14 +151,16 @@ async function doIt() {
 		const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
 		return nj.runtime.markSafe(jsonString)
 	  });
-		fs.writeFile("build/index.html", nj.render('index.html',
+
+		await fs.mkdir('build', { recursive: true });
+		await fs.writeFile("build/index.html", nj.render('index.html',
 		{
-			gigs : data,
-			busiestVenues : Object.entries(sortedGroupVenues).splice(0,10),
-			hardestGigger : Object.entries(sortedGroupArtists)[0],
-			gigsFree : freeShows.length,
-			gigsPerDayDates : Object.keys(groups),
-			gigsPerDay : groupArrays
+			gigs: data,
+			busiestVenues: Object.entries(sortedGroupVenues).splice(0, 10),
+			hardestGigger: Object.entries(sortedGroupArtists)[0],
+			gigsFree: freeShows.length,
+			gigsPerDayDates: Object.keys(groups),
+			gigsPerDay: groupArrays
 		}));
 }
 
