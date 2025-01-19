@@ -148,8 +148,7 @@
   font-family: "Instrument Serif";
   font-style: normal;
   font-weight: 400;
-  src: url(https://sydneymusic.net/fonts/instrument-serif/InstrumentSerif-Regular.woff2)
-    format("woff2");
+  src: url(/static/InstrumentSerif-Regular.ttf) format("ttf");
 }
 @font-face {
   font-family: "Instrument Sans";
