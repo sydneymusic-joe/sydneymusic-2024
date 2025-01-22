@@ -157,7 +157,7 @@ async function doIt() {
 		{
 			gigs: data,
 			busiestVenues: Object.entries(sortedGroupVenues).splice(0, 10),
-			hardestGigger: Object.entries(sortedGroupArtists)[0],
+			hardestGigger: Object.entries(sortedGroupArtists).splice(0,100),
 			gigsFree: freeShows.length,
 			gigsPerDayDates: Object.keys(groups),
 			gigsPerDay: groupArrays
