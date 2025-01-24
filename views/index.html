@@ -378,24 +378,36 @@
               <div
                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6"
               >
-                {% for g in gigsArr %}
+                {% for g in gigsArr.slice(0,24) %}
                 <div class="border border-black p-2 flex flex-col">
                   <div class="mb-2">
                     <div class="font-bold">{{ g.promotedName }}</div>
 
                     {% if g.performersListJson.length > 0 %}
-                    <div class="font-medium text-sm line-clamp-2">
+                    <div class="font-medium text-sm">
                       w/ {% for a in g.performersListJson %} {{ a }}{% if not
                       loop.last %}, {% endif %} {% endfor %}
                     </div>
                     {% endif %}
                   </div>
 
-                  <div class="mt-auto">
-                    {{ g.gigStartDate | date("d MMM") }}
+                  <div class="flex mt-auto">
+                    <div class="mr-2 pr-2 border-r line-clamp-1">
+                      {{ g.gigStartDate | date("d MMM") }}
+                    </div>
+                    <div class="line-clamp-1">{{ g.venue.venueName }}</div>
                   </div>
                 </div>
-                {% endfor %}
+                {% endfor %} {% if gigsArr.length > 24 %}
+                <div
+                  class="border border-black p-2 flex flex-col justify-center items-center cursor-pointer see-all-gigs"
+                  data-venue="{{ venueName }}"
+                >
+                  <span class="text-blue-500 underline"
+                    >..see all gigs for this venue</span
+                  >
+                </div>
+                {% endif %}
               </div>
             </div>
           </li>
