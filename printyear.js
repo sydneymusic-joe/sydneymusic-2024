@@ -3,7 +3,6 @@ import { GraphQLClient, gql } from "graphql-request";
 import * as fs from "fs/promises";
 import nj from "nunjucks";
 import datefilter from "nunjucks-date-filter";
-import { group } from "console";
 
 const client = new GraphQLClient(`https://graphql.datocms.com/`, {
   headers: {
@@ -22,7 +21,6 @@ function doQuery(query) {
 async function doIt() {
   let startDate = new Date("2024-01-01");
   let endDate = new Date("2025-01-01");
-
   let exclude = [
     "Monday Night Confessions",
     "Saturday Jazz",
@@ -30,13 +28,13 @@ async function doIt() {
     "Sunset Acoustics",
   ];
   let cleanUp = [/\(.*\)/g, /\[.*\]/g];
-
   const pagesize = 100;
   let iter = 0;
   let ret = 100;
 
   let data = [];
   let query = "";
+
   while (iter < 80) {
     query += `
 		page${iter + 1}:allEvents(
@@ -58,12 +56,11 @@ async function doIt() {
 				venueName
 				address
 				suburb
-				url,
+				url
 				slug
 			}
 		}
-		`;
-
+	`;
     iter++;
   }
 
@@ -73,8 +70,7 @@ async function doIt() {
 
   for (iter = 1; iter < 80; iter++) {
     const p = page["page" + iter];
-    if (p.length == 0) break;
-
+    if (!p || p.length === 0) break;
     data = data.concat(p);
   }
   ret = data.length;
@@ -131,6 +127,10 @@ async function doIt() {
     }
   }
 
+  Object.values(artistGigs).forEach((gigs) => {
+    gigs.sort((a, b) => new Date(a.gigStartDate) - new Date(b.gigStartDate));
+  });
+
   const sortedArtistGigs = Object.entries(artistGigs)
     .sort(([aName, aGigs], [bName, bGigs]) => bGigs.length - aGigs.length)
     .slice(0, 100);
@@ -144,6 +144,10 @@ async function doIt() {
     }
     venueGigs[vName].push(gig);
   }
+
+  Object.values(venueGigs).forEach((gigs) => {
+    gigs.sort((a, b) => new Date(a.gigStartDate) - new Date(b.gigStartDate));
+  });
 
   const sortedVenueGigs = Object.entries(venueGigs)
     .sort(([vA, gigsA], [vB, gigsB]) => gigsB.length - gigsA.length)
@@ -169,7 +173,6 @@ async function doIt() {
     nj.render("index.html", {
       gigs: data,
       busiestVenues: Object.entries(sortedGroupVenues).splice(0, 10),
-      // hardestGigger: Object.entries(sortedGroupArtists).splice(0, 100),
       gigsFree: freeShows.length,
       gigsPerDayDates: Object.keys(groups),
       gigsPerDay: groupArrays,

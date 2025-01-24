@@ -285,13 +285,13 @@
       <div class="pt-10">
         <div
           id="toggle-acts"
-          class="inline-block bg-black text-white text-2xl md:text-4xl border-2 border-black rounded-[4rem] px-4 py-1 mb-2"
+          class="inline-block bg-black text-white text-2xl md:text-4xl border-2 border-black rounded-[4rem] px-4 py-1 mb-2 cursor-pointer"
         >
           hardest gigging acts
         </div>
         <div
           id="toggle-venues"
-          class="inline-block text-2xl md:text-4xl border-2 border-black rounded-[4rem] px-4 py-1 mb-2"
+          class="inline-block text-2xl md:text-4xl border-2 border-black rounded-[4rem] px-4 py-1 mb-2 cursor-pointer"
         >
           venues
         </div>
@@ -327,21 +327,26 @@
               data-artist="{{ artistName }}"
             >
               <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4 mb-6"
               >
                 {% for g in gigsArr %}
-                <div class="border border-black p-2">
-                  <div class="font-bold">{{ g.promotedName }}</div>
+                <div class="border border-black p-2 flex flex-col">
+                  <div class="mb-2">
+                    <div class="font-bold">{{ g.promotedName }}</div>
 
-                  {% if g.performersListJson.length > 0 %}
-                  <div class="font-medium text-sm">
-                    w/ {% for a in g.performersListJson %} {{ a }}{% if not
-                    loop.last %}, {% endif %} {% endfor %}
+                    {% if g.performersListJson.length > 0 %}
+                    <div class="font-medium text-sm line-clamp-2">
+                      w/ {% for a in g.performersListJson %} {{ a }}{% if not
+                      loop.last %}, {% endif %} {% endfor %}
+                    </div>
+                    {% endif %}
                   </div>
-                  {% endif %}
 
-                  <div class="flex gap-3">
-                    <div>{{ g.gigStartDate }}</div>
+                  <div class="flex mt-auto">
+                    <div class="mr-2 pr-2 border-r line-clamp-1">
+                      {{ g.gigStartDate | date("d MMM") }}
+                    </div>
+                    <div class="line-clamp-1">{{ g.venue.venueName }}</div>
                   </div>
                 </div>
                 {% endfor %}
@@ -363,7 +368,7 @@
           {% for venueName, gigsArr in sortedVenueGigs %}
           <li>
             <div
-              class="venue-item cursor-pointer inline-block hover:bg-black hover:text-white cursor-pointer"
+              class="venue-item inline-block hover:bg-black hover:text-white cursor-pointer"
               data-venue="{{ venueName }}"
             >
               <span class="font-medium text-2xl">{{ venueName }}</span> ({{
@@ -374,18 +379,20 @@
                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6"
               >
                 {% for g in gigsArr %}
-                <div class="border border-black p-2">
-                  <div class="font-bold">{{ g.promotedName }}</div>
+                <div class="border border-black p-2 flex flex-col">
+                  <div class="mb-2">
+                    <div class="font-bold">{{ g.promotedName }}</div>
 
-                  {% if g.performersListJson.length > 0 %}
-                  <div class="font-medium text-sm">
-                    w/ {% for a in g.performersListJson %} {{ a }}{% if not
-                    loop.last %}, {% endif %} {% endfor %}
+                    {% if g.performersListJson.length > 0 %}
+                    <div class="font-medium text-sm line-clamp-2">
+                      w/ {% for a in g.performersListJson %} {{ a }}{% if not
+                      loop.last %}, {% endif %} {% endfor %}
+                    </div>
+                    {% endif %}
                   </div>
-                  {% endif %}
 
-                  <div class="flex gap-3">
-                    <div>{{ g.gigStartDate }}</div>
+                  <div class="mt-auto">
+                    {{ g.gigStartDate | date("d MMM") }}
                   </div>
                 </div>
                 {% endfor %}
