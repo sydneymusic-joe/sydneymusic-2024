@@ -1,168 +1,188 @@
-import 'dotenv/config';
-import { GraphQLClient, gql } from 'graphql-request';
-import * as fs from 'fs/promises';
-import nj from 'nunjucks';
-import datefilter from 'nunjucks-date-filter'
-import { group } from 'console';
+import "dotenv/config";
+import { GraphQLClient, gql } from "graphql-request";
+import * as fs from "fs/promises";
+import nj from "nunjucks";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 
-const client = new GraphQLClient(
-	`https://graphql.datocms.com/`,
-	{
-		headers: {
-			authorization: `Bearer ${process.env.DATOCMS_TOKEN}`
-		}
-	}
-);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const client = new GraphQLClient(`https://graphql.datocms.com/`, {
+  headers: {
+    authorization: `Bearer ${process.env.DATOCMS_TOKEN}`,
+  },
+});
 
 function doQuery(query) {
-	return client.request(
-		gql`
-			${query}
-		`
-	);
+  return client.request(
+    gql`
+      ${query}
+    `
+  );
 }
 
 async function doIt() {
-	let startDate = new Date("2024-01-01");
-	let endDate = new Date("2025-01-01");
+  let startDate = new Date("2024-01-01");
+  let endDate = new Date("2025-01-01");
+  let exclude = [
+    "Monday Night Confessions",
+    "Saturday Jazz",
+    "Sunday Jazz",
+    "Sunset Acoustics",
+  ];
+  let cleanUp = [/\(.*\)/g, /\[.*\]/g];
+  const pagesize = 100;
+  let iter = 0;
+  let data = [];
+  let query = "";
 
-	let exclude = [
-		"Monday Night Confessions",
-		"Saturday Jazz",
-		"Sunday Jazz",
-		"Sunset Acoustics"
-	];
-	let cleanUp = [
-		/\(.*\)/g,
-		/\[.*\]/g,
-	]
+  while (iter < 80) {
+    query += `
+      page${iter + 1}:allEvents(
+        orderBy: [gigStartDate_ASC],
+        first: ${pagesize},
+        skip:${iter * pagesize}
+        filter: { gigStartDate : {gte: "${startDate.toISOString()}", lt: "${endDate.toISOString()}" }}
+      ) {
+        id
+        gigStartDate
+        promotedName
+        ticketUrl
+        performersListJson
+        furtherInfo
+        furtherInfoContributorInitials
+        isFree
+        isPwyc
+        venue {
+          venueName
+          address
+          suburb
+          url
+          slug
+        }
+      }
+    `;
+    iter++;
+  }
 
-	const pagesize = 100;
-	let iter = 0;
-	let ret = 100;
+  const page = await doQuery(`{ ${query} }`);
 
-	let data = [];
-	let query = '';
-	while (iter < 80) {
-		query += `
-		page${iter + 1}:allEvents(
-			orderBy: [gigStartDate_ASC],
-			first: ${pagesize},
-			skip:${iter * pagesize}
-			filter: { gigStartDate : {gte: "${startDate.toISOString()}", lt: "${endDate.toISOString()}" }}
-		) {
-			id
-			gigStartDate
-			promotedName
-			ticketUrl
-			performersListJson
-			furtherInfo
-			furtherInfoContributorInitials
-			isFree
-			isPwyc
-			venue {
-				venueName
-				address
-				suburb
-				url,
-				slug
-			}
-		}
-		`;
+  for (iter = 1; iter < 80; iter++) {
+    const p = page["page" + iter];
+    if (!p || p.length === 0) break;
+    data = data.concat(p);
+  }
 
-		iter++;
-	}
+  const groups = data.reduce((groups, gig) => {
+    const date = gig.gigStartDate.split("T")[0];
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(gig);
+    return groups;
+  }, {});
 
-	const page = await doQuery(`{
-		${query}
-	}`);
+  const groupVenues = data.reduce((groupVenues, gig) => {
+    const venueName = gig.venue.venueName;
+    if (!groupVenues[venueName]) {
+      groupVenues[venueName] = gig.venue;
+      groupVenues[venueName].count = 0;
+    }
+    groupVenues[venueName].count++;
+    return groupVenues;
+  }, {});
 
-	for (iter = 1; iter < 80; iter++) {
-		const p = page['page' + iter];
-		if (p.length == 0) break;
+  const sortedGroupVenues = Object.values(groupVenues).sort(
+    (a, b) => b.count - a.count
+  );
 
-		data = data.concat(p);
-	}
-	ret = data.length;
+  const groupArrays = Object.keys(groups).map((date) => {
+    return groups[date].length;
+  });
 
-	// this gives an object with dates as keys
-	const groups = data.reduce((groups, gig) => {
-		const date = gig.gigStartDate.split('T')[0];
-		if (!groups[date]) {
-			groups[date] = [];
-		}
-		groups[date].push(gig);
-		return groups;
-	}, {});
+  const freeShows = data.filter((gig) => gig.isFree);
 
-	const groupArtists = data.reduce((groupArtists, gig) => {
-		const artists = [...(gig.performersListJson ?? [])];
-		if (!exclude.includes(gig.promotedName)) {
-			artists.push(gig.promotedName);
-		}
+  const artistGigs = {};
 
-		artists.forEach((artist) => {
-			let a = artist.toString().trim() + "\0";
-			cleanUp.forEach((regex) => {
-				a = a.replace(regex, '').trim();
-			});
-			if (!groupArtists[a]) {
-				groupArtists[a] = 0;
-			}
-			groupArtists[a]++;
-		});
-		return groupArtists;
-	}, {});
+  function pushGig(artist, gig) {
+    if (!artistGigs[artist]) {
+      artistGigs[artist] = [];
+    }
+    artistGigs[artist].push(gig);
+  }
 
-	const sortedGroupArtists = Object.entries(groupArtists)
-		.sort(([, a], [, b]) => b - a)
-		.reduce((acc, [key, value]) => {
-			acc[key.toString()] = value;
-			return acc;
-		}, {});
+  for (const gig of data) {
+    const performers = [...(gig.performersListJson ?? [])];
+    if (!exclude.includes(gig.promotedName)) {
+      performers.push(gig.promotedName);
+    }
+    for (let artist of performers) {
+      artist = artist.trim();
+      cleanUp.forEach((regex) => {
+        artist = artist.replace(regex, "").trim();
+      });
+      pushGig(artist, gig);
+    }
+  }
 
-	const groupVenues = data.reduce((groupVenues, gig) => {
-		const venueName = gig.venue.venueName;
-		if (!groupVenues[venueName]) {
-			groupVenues[venueName] = gig.venue;
-			groupVenues[venueName].count = 0;
-		}
-		groupVenues[venueName].count++;
-		return groupVenues;
-	}, {});
+  Object.values(artistGigs).forEach((gigs) => {
+    gigs.sort((a, b) => new Date(a.gigStartDate) - new Date(b.gigStartDate));
+  });
 
-	const sortedGroupVenues = Object.values(groupVenues)
-		.sort((a, b) => b.count - a.count);
-		
-	// Edit: to add it in the array format instead
-	const groupArrays = Object.keys(groups).map((date) => {
-		return groups[date].length;
-	});
+  const sortedArtistGigs = Object.entries(artistGigs)
+    .sort(([aName, aGigs], [bName, bGigs]) => bGigs.length - aGigs.length)
+    .slice(0, 100);
 
-	const freeShows = data.filter((gig) => gig.isFree);
+  const venueGigs = {};
 
-	let env = nj.configure('views', {autoescape:true});
-	env.addFilter('date', datefilter);
-	
-	env.addFilter('json', function (value, spaces) {
-		if (value instanceof nj.runtime.SafeString) {
-		  value = value.toString()
-		}
-		const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
-		return nj.runtime.markSafe(jsonString)
-	  });
+  for (const gig of data) {
+    const vName = gig.venue.venueName;
+    if (!venueGigs[vName]) {
+      venueGigs[vName] = [];
+    }
+    venueGigs[vName].push(gig);
+  }
 
-		await fs.mkdir('build', { recursive: true });
-		await fs.writeFile("build/index.html", nj.render('index.html',
-		{
-			gigs: data,
-			busiestVenues: Object.entries(sortedGroupVenues).splice(0, 10),
-			hardestGigger: Object.entries(sortedGroupArtists)[0],
-			gigsFree: freeShows.length,
-			gigsPerDayDates: Object.keys(groups),
-			gigsPerDay: groupArrays
-		}));
-		await fs.copyFile("static/style.css", "build/style.css");
+  Object.values(venueGigs).forEach((gigs) => {
+    gigs.sort((a, b) => new Date(a.gigStartDate) - new Date(b.gigStartDate));
+  });
+
+  const sortedVenueGigs = Object.entries(venueGigs)
+    .sort(([vA, gigsA], [vB, gigsB]) => gigsB.length - gigsA.length)
+    .slice(0, 100);
+
+  let env = nj.configure("views", { autoescape: true });
+  env.addFilter("date", function (value, format = "DD MMM") {
+    return dayjs(value).tz("Australia/Sydney").format(format);
+  });
+  env.addFilter("json", function (value, spaces) {
+    if (value instanceof nj.runtime.SafeString) {
+      value = value.toString();
+    }
+    const jsonString = JSON.stringify(value, null, spaces).replace(
+      /</g,
+      "\\u003c"
+    );
+    return nj.runtime.markSafe(jsonString);
+  });
+
+  await fs.mkdir("build", { recursive: true });
+  await fs.writeFile(
+    "build/index.html",
+    nj.render("index.html", {
+      gigs: data,
+      busiestVenues: Object.entries(sortedGroupVenues).splice(0, 10),
+      gigsFree: freeShows.length,
+      gigsPerDayDates: Object.keys(groups),
+      gigsPerDay: groupArrays,
+      sortedArtistGigs,
+      sortedVenueGigs,
+    })
+  );
+  await fs.copyFile("static/style.css", "build/style.css");
+  await fs.copyFile("static/section-toggles.js", "build/section-toggles.js");
 }
 
-doIt()
+doIt();
