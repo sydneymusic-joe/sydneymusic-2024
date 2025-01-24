@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnDate = document.getElementById("toggle-by-date");
   const datePicker = document.getElementById("date-picker");
 
-  // Toggle Acts Section
+  // Toggle acts gigs
   btnActs.addEventListener("click", () => {
     hideDateSection();
     btnDate.style.backgroundColor = "";
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeAllVenueGigs();
   });
 
-  // Toggle Artist Gigs
+  // Toggle acts gigs
   const artistItems = document.querySelectorAll(".artist-item");
   artistItems.forEach((item) => {
     item.addEventListener("click", () => {
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Toggle Venues Section
+  // Toggle venues section
   btnVenues.addEventListener("click", () => {
     hideDateSection();
     btnDate.style.backgroundColor = "";
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeAllArtistGigs();
   });
 
-  // Toggle Venue Gigs
+  // Toggle venues gigs
   const venueItems = document.querySelectorAll(".venue-item");
   venueItems.forEach((item) => {
     item.addEventListener("click", () => {
@@ -123,63 +123,68 @@ document.addEventListener("DOMContentLoaded", () => {
       return `<p class="text-xl">No gigs :(</p>`;
     }
     let html = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">`;
+
     gigsArray.forEach((g) => {
       html += `
-        <div class="border border-black p-2 flex flex-col">
-          <div class="font-bold">${g.promotedName}</div>
-          ${
-            g.performersListJson && g.performersListJson.length
-              ? `<div class="font-medium text-sm">
-                  w/ ${g.performersListJson.join(", ")}
-                </div>`
-              : ""
-          }
-          <div class="mt-2 text-sm">${new Date(
-            g.gigStartDate
-          ).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-          })}</div>
+        <div class="border border-black p-3 flex flex-col">
+          <div>
+            <div class="mb-8">
+              <div class="font-bold text-xl">${g.promotedName}</div>
+              ${
+                g.performersListJson && g.performersListJson.length
+                  ? `<div class="text-sm line-clamp-4">
+                      w/ ${g.performersListJson.join(", ")}
+                    </div>`
+                  : ""
+              }
+            </div>
+          </div>
+          <div class="mt-auto text-lg opacity-60">
+            <span>@</span>
+            <span class="font-bold">${g.venue.venueName}</span>
+          </div>
         </div>
-      `;
+    `;
     });
     html += `</div>`;
     return html;
   }
 
-  function buildGigsHtml(gigsArray, venueName, showAll = false) {
+  function buildVenueGigsHtml(gigsArray, venueName, showAll = false) {
     let html = "";
     const gigsToDisplay = showAll ? gigsArray : gigsArray.slice(0, 24);
+
     gigsToDisplay.forEach((g) => {
       html += `
-        <div class="border border-black p-2 flex flex-col">
-          <div class="mb-2">
-          <div class="font-bold">${g.promotedName}</div>
-          ${
-            g.performersListJson && g.performersListJson.length
-              ? `<div class="font-medium text-sm">
-                  w/ ${g.performersListJson.join(", ")}
-                </div>`
-              : ""
-          }
-          </div>
-          <div class="flex mt-auto">
-            <div class="mr-2 pr-2 border-r line-clamp-1">
-              ${new Date(g.gigStartDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-              })}
+        <div class="border border-black p-3 flex flex-col">
+          <div>
+            <div class="mb-8">
+              <div class="font-bold text-xl">${g.promotedName}</div>
+              ${
+                g.performersListJson && g.performersListJson.length
+                  ? `<div class="text-sm line-clamp-4">
+                      w/ ${g.performersListJson.join(", ")}
+                    </div>`
+                  : ""
+              }
             </div>
-            <div class="line-clamp-1">${g.venue.venueName}</div>
+          </div>
+          <div class="mt-auto text-lg opacity-60">
+            <span>${new Date(g.gigStartDate).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+            })}</span>
           </div>
         </div>
       `;
     });
 
-    // If more than 24 gigs and not showing all, add "See All Gigs" button
     if (!showAll && gigsArray.length > 24) {
       html += `
-        <div class="border border-black p-2 flex flex-col justify-center items-center cursor-pointer see-all-gigs" data-venue="${venueName}">
+        <div
+          class="border border-black p-2 flex flex-col justify-center items-center cursor-pointer see-all-gigs"
+          data-venue="${venueName}"
+        >
           <span class="font bold text-2xl">see all gigs for this venue</span>
         </div>
       `;
@@ -196,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const allGigs = window.ALL_GIGS.filter(
         (gig) => gig.venue.venueName === venueName
       );
-      gigsContainer.innerHTML = buildGigsHtml(allGigs, venueName, true);
+      gigsContainer.innerHTML = buildVenueGigsHtml(allGigs, venueName, true);
     }
   });
 });

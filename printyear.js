@@ -2,7 +2,12 @@ import "dotenv/config";
 import { GraphQLClient, gql } from "graphql-request";
 import * as fs from "fs/promises";
 import nj from "nunjucks";
-import datefilter from "nunjucks-date-filter";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const client = new GraphQLClient(`https://graphql.datocms.com/`, {
   headers: {
@@ -30,50 +35,45 @@ async function doIt() {
   let cleanUp = [/\(.*\)/g, /\[.*\]/g];
   const pagesize = 100;
   let iter = 0;
-  let ret = 100;
-
   let data = [];
   let query = "";
 
   while (iter < 80) {
     query += `
-		page${iter + 1}:allEvents(
-			orderBy: [gigStartDate_ASC],
-			first: ${pagesize},
-			skip:${iter * pagesize}
-			filter: { gigStartDate : {gte: "${startDate.toISOString()}", lt: "${endDate.toISOString()}" }}
-		) {
-			id
-			gigStartDate
-			promotedName
-			ticketUrl
-			performersListJson
-			furtherInfo
-			furtherInfoContributorInitials
-			isFree
-			isPwyc
-			venue {
-				venueName
-				address
-				suburb
-				url
-				slug
-			}
-		}
-	`;
+      page${iter + 1}:allEvents(
+        orderBy: [gigStartDate_ASC],
+        first: ${pagesize},
+        skip:${iter * pagesize}
+        filter: { gigStartDate : {gte: "${startDate.toISOString()}", lt: "${endDate.toISOString()}" }}
+      ) {
+        id
+        gigStartDate
+        promotedName
+        ticketUrl
+        performersListJson
+        furtherInfo
+        furtherInfoContributorInitials
+        isFree
+        isPwyc
+        venue {
+          venueName
+          address
+          suburb
+          url
+          slug
+        }
+      }
+    `;
     iter++;
   }
 
-  const page = await doQuery(`{
-		${query}
-	}`);
+  const page = await doQuery(`{ ${query} }`);
 
   for (iter = 1; iter < 80; iter++) {
     const p = page["page" + iter];
     if (!p || p.length === 0) break;
     data = data.concat(p);
   }
-  ret = data.length;
 
   const groups = data.reduce((groups, gig) => {
     const date = gig.gigStartDate.split("T")[0];
@@ -154,8 +154,9 @@ async function doIt() {
     .slice(0, 100);
 
   let env = nj.configure("views", { autoescape: true });
-  env.addFilter("date", datefilter);
-
+  env.addFilter("date", function (value, format = "DD MMM") {
+    return dayjs(value).tz("Australia/Sydney").format(format);
+  });
   env.addFilter("json", function (value, spaces) {
     if (value instanceof nj.runtime.SafeString) {
       value = value.toString();
@@ -181,7 +182,7 @@ async function doIt() {
     })
   );
   await fs.copyFile("static/style.css", "build/style.css");
-  await fs.copyFile("static/artist-toggle.js", "build/artist-toggle.js");
+  await fs.copyFile("static/section-toggles.js", "build/section-toggles.js");
 }
 
 doIt();
