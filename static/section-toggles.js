@@ -88,8 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  btnActs.classList.add("bg-black", "text-white");
-
+  // Toggle gigs by date
   btnDate.addEventListener("click", () => {
     const chosenDate = datePicker.value;
     actsSection.classList.add("hidden");
@@ -101,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showGigsByDate(chosenDate);
   });
 
+  // Toggle change to gigs by date
   datePicker.addEventListener("change", () => {
     const chosenDate = datePicker.value;
     showGigsByDate(chosenDate);
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!gigsArray.length) {
       return `<p class="text-xl">No gigs :(</p>`;
     }
-    let html = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">`;
+    let html = `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">`;
 
     gigsArray.forEach((g) => {
       html += `
@@ -150,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return html;
   }
 
+  // Semi 'paginate" venue gigs section for large gig lists
   function buildVenueGigsHtml(gigsArray, venueName, showAll = false) {
     let html = "";
     const gigsToDisplay = showAll ? gigsArray : gigsArray.slice(0, 24);
@@ -193,6 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return html;
   }
 
+  // toggle see all gigs
   venuesSection.addEventListener("click", (event) => {
     const seeAllButton = event.target.closest(".see-all-gigs");
     if (seeAllButton) {

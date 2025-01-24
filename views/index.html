@@ -2,7 +2,7 @@
 <div class="border border-black p-3 flex flex-col">
   <div>
     <div class="mb-8">
-      <div class="font-bold text-xl">{{ g.promotedName }}</div>
+      <div class="font-bold text-xl break-words">{{ g.promotedName }}</div>
       {% if g.performersListJson and g.performersListJson.length > 0 %}
       <div class="text-sm line-clamp-4">
         w/ {% for a in g.performersListJson %} {{ a }}{% if not loop.last %},{%
@@ -219,9 +219,7 @@
               class="gigs-for-artist hidden m-2"
               data-artist="{{ artistName }}"
             >
-              <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4 mb-6"
-              >
+              <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 {% for g in gigsArr %} {{ gigCard(g) }} {% endfor %}
               </div>
             </div>
@@ -248,7 +246,7 @@
             </div>
             <div class="gigs-for-venue hidden m-2" data-venue="{{ venueName }}">
               <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6"
+                class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6"
               >
                 {% for g in gigsArr.slice(0, 24) %} {{ gigCard(g, false) }} {%
                 endfor %} {% if gigsArr.length > 24 %}
