@@ -5,18 +5,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const dateGigs = document.getElementById("date-gigs");
   const btnActs = document.getElementById("toggle-acts");
   const btnVenues = document.getElementById("toggle-venues");
+  const btnDate = document.getElementById("toggle-by-date");
   const datePicker = document.getElementById("date-picker");
 
   // Toggle Acts Section
   btnActs.addEventListener("click", () => {
     hideDateSection();
-    datePicker.value = "";
-    datePicker.style.backgroundColor = "";
-    datePicker.style.color = "";
+    btnDate.style.backgroundColor = "";
+    btnDate.style.color = "";
     actsSection.classList.remove("hidden");
     venuesSection.classList.add("hidden");
     btnActs.classList.add("bg-black", "text-white");
     btnVenues.classList.remove("bg-black", "text-white");
+    btnDate.classList.remove("bg-black", "text-white");
     closeAllVenueGigs();
   });
 
@@ -50,13 +51,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Toggle Venues Section
   btnVenues.addEventListener("click", () => {
     hideDateSection();
-    datePicker.value = "";
-    datePicker.style.backgroundColor = "";
-    datePicker.style.color = "";
+    btnDate.style.backgroundColor = "";
+    btnDate.style.color = "";
     venuesSection.classList.remove("hidden");
     actsSection.classList.add("hidden");
     btnVenues.classList.add("bg-black", "text-white");
     btnActs.classList.remove("bg-black", "text-white");
+    btnDate.classList.remove("bg-black", "text-white");
     closeAllArtistGigs();
   });
 
@@ -85,36 +86,31 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".venue-item").forEach((item) => {
       item.classList.remove("bg-black", "text-white");
     });
-    // Optionally reset all gigs containers to show only first 24 gigs
-    // This is handled when "See All Gigs" is clicked, so no need to reset here
   }
 
   btnActs.classList.add("bg-black", "text-white");
 
-  // Date Picker Functionality
-  datePicker.addEventListener("change", () => {
+  btnDate.addEventListener("click", () => {
     const chosenDate = datePicker.value;
-    if (!chosenDate) {
-      hideDateSection();
-      datePicker.style.backgroundColor = "";
-      datePicker.style.color = "";
-      return;
-    }
-    datePicker.style.backgroundColor = "black";
-    datePicker.style.color = "white";
-    showGigsByDate(chosenDate);
-  });
-
-  function showGigsByDate(chosenDate) {
     actsSection.classList.add("hidden");
     venuesSection.classList.add("hidden");
     btnActs.classList.remove("bg-black", "text-white");
     btnVenues.classList.remove("bg-black", "text-white");
+    btnDate.classList.add("bg-black", "text-white");
+    dateSection.classList.remove("hidden");
+    showGigsByDate(chosenDate);
+  });
+
+  datePicker.addEventListener("change", () => {
+    const chosenDate = datePicker.value;
+    showGigsByDate(chosenDate);
+  });
+
+  function showGigsByDate(chosenDate) {
     const filtered = window.ALL_GIGS.filter(
       (gig) => gig.gigStartDate.slice(0, 10) === chosenDate
     );
     dateGigs.innerHTML = buildDateGigsHtml(filtered);
-    dateSection.classList.remove("hidden");
   }
 
   function hideDateSection() {
