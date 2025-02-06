@@ -1,168 +1,275 @@
-import 'dotenv/config';
-import { GraphQLClient, gql } from 'graphql-request';
-import * as fs from 'fs/promises';
-import nj from 'nunjucks';
-import datefilter from 'nunjucks-date-filter'
-import { group } from 'console';
+import "dotenv/config";
+import { GraphQLClient, gql } from "graphql-request";
+import * as fs from "fs/promises";
+import nj from "nunjucks";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 
-const client = new GraphQLClient(
-	`https://graphql.datocms.com/`,
-	{
-		headers: {
-			authorization: `Bearer ${process.env.DATOCMS_TOKEN}`
-		}
-	}
-);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const client = new GraphQLClient(`https://graphql.datocms.com/`, {
+  headers: {
+    authorization: `Bearer ${process.env.DATOCMS_TOKEN}`,
+  },
+});
 
 function doQuery(query) {
-	return client.request(
-		gql`
-			${query}
-		`
-	);
+  return client.request(
+    gql`
+      ${query}
+    `
+  );
+}
+
+/**
+  * @param {Object} object
+  * @param {string} key
+  * @return {any} value
+ */
+function getParameterCaseInsensitive(object, key) {
+  const asLowercase = key.toLowerCase();
+  return object[Object.keys(object)
+    .find(k => k.toLowerCase() === asLowercase)
+  ];
 }
 
 async function doIt() {
-	let startDate = new Date("2024-01-01");
-	let endDate = new Date("2025-01-01");
+  let startDate = new Date("2024-01-01");
+  let endDate = new Date("2025-01-01");
+  let exclude = [
+    "Monday Night Confessions",
+    "Saturday Jazz",
+    "Sunday Jazz",
+    "Sunset Acoustics",
+    "5 bands for 5 bucks",
+    "PARRAMATTA LANES",
+    "Innerwest Hop",
+    "Hijinx Wednesdays",
+    "Brett Whiteley Studio Sessions",
+    "Fridays @ Lansdowne",
+    "LOCAL PRODUCE"
+  ];
+  let cleanUp = [/\(.*\)/g, /\[.*\]/g, /DJ\s/g];
+  const pagesize = 100;
+  let iter = 0;
+  let data = [];
+  let query = "";
 
-	let exclude = [
-		"Monday Night Confessions",
-		"Saturday Jazz",
-		"Sunday Jazz",
-		"Sunset Acoustics"
-	];
-	let cleanUp = [
-		/\(.*\)/g,
-		/\[.*\]/g,
-	]
+  while (iter < 80) {
+    query += `
+      page${iter + 1}:allEvents(
+        orderBy: [gigStartDate_ASC],
+        first: ${pagesize},
+        skip:${iter * pagesize}
+        filter: { gigStartDate : {gte: "${startDate.toISOString()}", lt: "${endDate.toISOString()}" }}
+      ) {
+        id
+        gigStartDate
+        promotedName
+        ticketUrl
+        performersListJson
+        furtherInfo
+        furtherInfoContributorInitials
+        isFree
+        isPwyc
+        venue {
+          venueName
+          capacity
+          address
+          suburb
+          postcode
+          url
+          slug
+        }
+      }
+    `;
+    iter++;
+  }
 
-	const pagesize = 100;
-	let iter = 0;
-	let ret = 100;
+  const page = await doQuery(`{ ${query} }`);
 
-	let data = [];
-	let query = '';
-	while (iter < 80) {
-		query += `
-		page${iter + 1}:allEvents(
-			orderBy: [gigStartDate_ASC],
-			first: ${pagesize},
-			skip:${iter * pagesize}
-			filter: { gigStartDate : {gte: "${startDate.toISOString()}", lt: "${endDate.toISOString()}" }}
-		) {
-			id
-			gigStartDate
-			promotedName
-			ticketUrl
-			performersListJson
-			furtherInfo
-			furtherInfoContributorInitials
-			isFree
-			isPwyc
-			venue {
-				venueName
-				address
-				suburb
-				url,
-				slug
-			}
-		}
-		`;
+  for (iter = 1; iter < 80; iter++) {
+    const p = page["page" + iter];
+    if (!p || p.length === 0) break;
+    data = data.concat(p);
+  }
 
-		iter++;
-	}
+  const groups = data.reduce((groups, gig) => {
+    const date = gig.gigStartDate.split("T")[0];
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(gig);
+    return groups;
+  }, {});
 
-	const page = await doQuery(`{
-		${query}
-	}`);
+  const venuesByCap = data.reduce((band, gig) => {
+    if (gig.venue.capacity) {
+      let cap = gig.venue.capacity;
+      switch (true) {
+        case (cap >= 250 && cap < 500):
+          band["250-500"]++;
+          break;
+        case (cap >= 500 && cap < 1500):
+          band["500-1500"]++;
+          break;
+        case (cap >= 1500 && cap < 5000):
+          band["1500-5000"]++;
+          break;
+        case (cap >= 5000):
+          band["5000+"]++;
+          break;
+        case (cap > 0 && cap < 100):
+          band["<100"]++;
+          break;
+        case (cap >= 100 && cap < 250):
+          band["100-250"]++;
+          break;
+      }
+    }
+    /*else {
+      band["Uncategorized"]++;
+    }*/
+    return band;
+  }, {"<100" : 0, "100-250" : 0, "250-500" : 0, "500-1500" : 0, "1500-5000" : 0, "5000+" : 0});
 
-	for (iter = 1; iter < 80; iter++) {
-		const p = page['page' + iter];
-		if (p.length == 0) break;
 
-		data = data.concat(p);
-	}
-	ret = data.length;
+  const postcodeRanges = [
+    { areaName: "CBD and Inner City", Postcodes: [2000,2001,2006,2007,2008,2009,2010,2011,2015,2016,2017,2018,2019,2020] },
+    { areaName: "Inner West", Postcodes: [2037,2038,2039,2040,2041,2042,2043,2044,2045,2046,2047,2048,2049,2050,2130,2131,2132,2133,2134,2135,2136,2137,2138,2139,2140,2203,2204,2206] },
+    { areaName: "Eastern Suburbs", Postcodes: [2021,2022,2023,2024,2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036] },
+    { areaName: "North Shore", Postcodes: [2055,2057,2059,2060,2061,2062,2063,2064,2065,2066,2067,2068,2069,2070,2071,2072,2073,2074,2075,2076,2077,2079,2080,2081,2082,2083,2088,2089,2090] },
+    { areaName: "Northern Beaches", Postcodes: [2084,2085,2086,2087,2092,2093,2094,2095,2096,2097,2099,2100,2101,2102,2103,2104,2105,2106,2107,2108] },
+    { areaName: "Southwest Sydney", Postcodes: [2148,2164,2165,2166,2167,2168,2170,2171,2172,2173,2174,2175,2176,2177,2178,2179,2214,2555,2556,2557,2558,2559,2560,2563,2564,2565,2566,2567,2568,2569,2570,2571,2572,2573,2574,2745,2752] },
+    { areaName: "Western Sydney", Postcodes: [1700,1730,1740,1741,1750,1755,1790,1811,1825,1830,1831,1835,2123,2124,2127,2128,2141,2142,2143,2144,2145,2146,2147,2150,2151,2152,2153,2155,2160,2161,2162,2163,2197,2580,2747,2748,2749,2750,2751,2753,2754,2756,2758,2759,2760,2761,2762,2763,2765,2766,2767,2768,2769,2770,2773,2774,2776,2777,2778,2779,2780,2782,2783,2784,2785,2786,2787,2790] },
+    { areaName: "Hills District", Postcodes : [1765,2154,2156,2157,2158,2159,2250,2330,2757,2775] },
+    { areaName: "Northern Suburbs", Postcodes : [2109,2110,2111,2112,2113,2114,2115,2116,2117,2118,2119,2120,2121,2122,2123,2124,2125,2126,2127,2128] },
+    { areaName : "Sutherland/Shire", Postcodes : [2224,2225,2226,2227,2228,2229,2230,2231,2232,2233,2234]}
+  ];
+  
+  // Group events by postcode range
+  const venuesByArea = postcodeRanges.map((range) => ({
+    areaName: range.areaName,
+    Postcodes: range.Postcodes,
+    count: data.filter(
+      (event) => {
+        return range.Postcodes.includes(parseInt(event.venue.postcode))
+      }
+    ).length
+  }));
 
-	// this gives an object with dates as keys
-	const groups = data.reduce((groups, gig) => {
-		const date = gig.gigStartDate.split('T')[0];
-		if (!groups[date]) {
-			groups[date] = [];
-		}
-		groups[date].push(gig);
-		return groups;
-	}, {});
+  const groupVenues = data.reduce((groupVenues, gig) => {
+    const venueName = gig.venue.venueName;
+    let v = getParameterCaseInsensitive(groupVenues, venueName);
+    if (!v) {
+      groupVenues[venueName] = gig.venue;
+      groupVenues[venueName].count = 0;
+      v = groupVenues[venueName];
+    }
+    v.count++;
+    return groupVenues;
+  }, {});
 
-	const groupArtists = data.reduce((groupArtists, gig) => {
-		const artists = [...(gig.performersListJson ?? [])];
-		if (!exclude.includes(gig.promotedName)) {
-			artists.push(gig.promotedName);
-		}
+  const sortedGroupVenues = Object.values(groupVenues).sort(
+    (a, b) => b.count - a.count
+  );
 
-		artists.forEach((artist) => {
-			let a = artist.toString().trim() + "\0";
-			cleanUp.forEach((regex) => {
-				a = a.replace(regex, '').trim();
-			});
-			if (!groupArtists[a]) {
-				groupArtists[a] = 0;
-			}
-			groupArtists[a]++;
-		});
-		return groupArtists;
-	}, {});
+  const groupArrays = Object.keys(groups).map((date) => {
+    return groups[date].length;
+  });
 
-	const sortedGroupArtists = Object.entries(groupArtists)
-		.sort(([, a], [, b]) => b - a)
-		.reduce((acc, [key, value]) => {
-			acc[key.toString()] = value;
-			return acc;
-		}, {});
+  const freeShows = data.filter((gig) => gig.isFree);
 
-	const groupVenues = data.reduce((groupVenues, gig) => {
-		const venueName = gig.venue.venueName;
-		if (!groupVenues[venueName]) {
-			groupVenues[venueName] = gig.venue;
-			groupVenues[venueName].count = 0;
-		}
-		groupVenues[venueName].count++;
-		return groupVenues;
-	}, {});
+  const artistGigs = {};
 
-	const sortedGroupVenues = Object.values(groupVenues)
-		.sort((a, b) => b.count - a.count);
-		
-	// Edit: to add it in the array format instead
-	const groupArrays = Object.keys(groups).map((date) => {
-		return groups[date].length;
-	});
+  function pushGig(artist, gig) {
+    if (!artistGigs[artist]) {
+      artistGigs[artist] = [];
+    }
+    artistGigs[artist].push(gig);
+  }
 
-	const freeShows = data.filter((gig) => gig.isFree);
+  // split out all artists
+  for (const gig of data) {
+    const performers = [...(gig.performersListJson ?? [])];
+    if (!exclude.includes(gig.promotedName)) {
+      performers.push(gig.promotedName);
+    }
+    for (let artist of performers) {
+      artist = artist.trim();
+      cleanUp.forEach((regex) => {
+        artist = artist.replace(regex, "").trim();
+      });
+      pushGig(artist, gig);
+    }
+  }
 
-	let env = nj.configure('views', {autoescape:true});
-	env.addFilter('date', datefilter);
-	
-	env.addFilter('json', function (value, spaces) {
-		if (value instanceof nj.runtime.SafeString) {
-		  value = value.toString()
-		}
-		const jsonString = JSON.stringify(value, null, spaces).replace(/</g, '\\u003c')
-		return nj.runtime.markSafe(jsonString)
-	  });
+  // sort the gigs by date ascending
+  Object.values(artistGigs).forEach((gigs) => {
+    gigs.sort((a, b) => new Date(a.gigStartDate) - new Date(b.gigStartDate));
+  });
 
-		await fs.mkdir('build', { recursive: true });
-		await fs.writeFile("build/index.html", nj.render('index.html',
-		{
-			gigs: data,
-			busiestVenues: Object.entries(sortedGroupVenues).splice(0, 10),
-			hardestGigger: Object.entries(sortedGroupArtists)[0],
-			gigsFree: freeShows.length,
-			gigsPerDayDates: Object.keys(groups),
-			gigsPerDay: groupArrays
-		}));
-		await fs.copyFile("static/style.css", "build/style.css");
+  // get the list of artists sorted by hardest gigging
+  const sortedArtistGigs = Object.entries(artistGigs)
+    .sort(([aName, aGigs], [bName, bGigs]) => bGigs.length - aGigs.length)
+    .splice(0, 600);
+
+  const venueGigs = {};
+
+  for (const gig of data) {
+    const vName = gig.venue.venueName;
+    if (!venueGigs[vName]) {
+      venueGigs[vName] = [];
+    }
+    venueGigs[vName].push(gig);
+  }
+
+  Object.values(venueGigs).forEach((gigs) => {
+    gigs.sort((a, b) => new Date(a.gigStartDate) - new Date(b.gigStartDate));
+  });
+
+  const sortedVenueGigs = Object.entries(venueGigs)
+    .sort(([vA, gigsA], [vB, gigsB]) => gigsB.length - gigsA.length)
+    .slice(0, 100);
+
+  let env = nj.configure("views", { autoescape: true });
+  env.addFilter("date", function (value, format = "DD MMM") {
+    return dayjs(value).tz("Australia/Sydney").format(format);
+  });
+  env.addFilter("json", function (value, spaces) {
+    if (value instanceof nj.runtime.SafeString) {
+      value = value.toString();
+    }
+    const jsonString = JSON.stringify(value, null, spaces).replace(
+      /</g,
+      "\\u003c"
+    );
+    return nj.runtime.markSafe(jsonString);
+  });
+
+  console.log(venuesByArea);
+
+  await fs.mkdir("build", { recursive: true });
+  await fs.writeFile(
+    "build/index.html",
+    nj.render("index.html", {
+      gigs: data,
+      busiestVenues: Object.entries(sortedGroupVenues).splice(0, 10),
+      gigsFree: freeShows.length,
+      gigsPerDayDates: Object.keys(groups),
+      gigsPerDay: groupArrays,
+      sortedArtistGigs,
+      sortedVenueGigs,
+      venuesByAreaKeys : venuesByArea.map(a=>a.areaName),
+      venuesByAreaValues : venuesByArea.map(a=>a.count),
+      venuesByCapKeys : Object.keys(venuesByCap),
+      venuesByCapValues : Object.values(venuesByCap)
+    })
+  );
+  await fs.copyFile("static/style.css", "build/style.css");
+  await fs.copyFile("static/section-toggles.js", "build/section-toggles.js");
 }
 
-doIt()
+doIt();
