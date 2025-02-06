@@ -252,6 +252,7 @@ async function doIt() {
   console.log(venuesByArea);
 
   await fs.mkdir("build", { recursive: true });
+  await fs.cp("assets/", "build/assets/", {recursive:true});
   await fs.writeFile(
     "build/index.html",
     nj.render("index.html", {
