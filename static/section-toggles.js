@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const actsSection = document.getElementById("acts-section");
   const venuesSection = document.getElementById("venues-section");
+  const areaSection = document.getElementById("area-section");
   const dateSection = document.getElementById("date-section");
   const dateGigs = document.getElementById("date-gigs");
   const btnActs = document.getElementById("toggle-acts");

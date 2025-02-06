@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node printyear.js",
-    "build:watch": "watch 'npm run build' . --ignoreDirectoryPattern=/build/"
+    "build:watch": "watch 'npm run build' . --ignoreDirectoryPattern=/build\/*/"
   },
   "author": "",
   "license": "ISC",
