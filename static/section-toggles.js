@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch("/allgigs.json")
     .then((response) => response.json().then((obj) => window.ALL_GIGS = obj))
     .then(() => {window.ALL_GIGS.forEach((el) => {
-      el.venue = ALL_VENUES.find((elV) => el.venue.id === elV.id);
+      el.venue = window.ALL_VENUES.find((elV) => el.venue.id === elV.id);
     })})
     .then(() => { initMap(); });
 });
