@@ -147,6 +147,12 @@ a:hover {
 		text-decoration: none;
 	}
 
+	@media screen and (max-width : 600px) {
+		.btn-cta {
+			width : 80%;
+		}
+	}
+
 	.btn-cta:hover {
 		background :#4f634a;
 	}
