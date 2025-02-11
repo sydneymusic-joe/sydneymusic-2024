@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
         `.gigs-for-artist[data-artist="${artist}"]`
       );
       if (!targetDiv) return;
+      const findArtist = window.ALL_GIGS.filter((g) => g.promotedName === artist || (g.performersListJson && g.performersListJson.includes(artist)));
+      targetDiv.innerHTML = buildDateGigsHtml(findArtist);
       const wasHidden = targetDiv.classList.contains("hidden");
       closeAllArtistGigs();
       if (wasHidden) {
@@ -71,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `.gigs-for-venue[data-venue="${venue}"]`
       );
       if (!targetDiv) return;
+      targetDiv.innerHTML = buildDateGigsHtml(window.ALL_GIGS.filter((g) => g.venue && g.venue.id === venue));
       const wasHidden = targetDiv.classList.contains("hidden");
       closeAllVenueGigs();
       if (wasHidden) {
@@ -146,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <div class="mt-auto text-lg opacity-60">
             <span>@</span>
-            <span class="font-bold">${g.venue.venueName}</span>
+            <span class="font-bold">${g.venue ? g.venue.venueName : ""}</span>
           </div>
           <div class="mt-auto text-lg opacity-60">
             <span>${new Date(g.gigStartDate).toLocaleDateString("en-GB", {
