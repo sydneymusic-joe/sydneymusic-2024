@@ -51,7 +51,8 @@ async function doIt() {
     "Fridays @ Lansdowne",
     "LOCAL PRODUCE"
   ];
-  let cleanUp = [/\(.*\)/g, /\[.*\]/g, /DJ\s/g];
+  const regexIntl = /\([A-Z]{2,3}\)/g;
+  let cleanUp = [regexIntl, /\[.*\]/g, /DJ\s/g];
   const pagesize = 100;
   let iter = 0;
   let data = [];
@@ -200,9 +201,8 @@ async function doIt() {
     .sort(([aName, aGigs], [bName, bGigs]) => bGigs.length - aGigs.length)
     .splice(0, 600);
 
-  const sortedVenueGigs = Object.entries(venues)
-    .sort(([vA, gigsA], [vB, gigsB]) => gigsB.count - gigsA.count)
-    .slice(0, 100);
+  const sortedVenueGigs = Object.entries(venues.filter((v) => v.count > 0))
+    .sort(([vA, gigsA], [vB, gigsB]) => gigsB.count - gigsA.count);
 
   let env = nj.configure("views", { autoescape: true });
   env.addFilter("date", function (value, format = "DD MMM") {
@@ -232,7 +232,8 @@ async function doIt() {
       gigsPerDay: groupArrays,
       sortedArtistGigs,
       sortedVenueGigs,
-      venueCount : venues.length
+      venueCount : venues.filter((v) => v.count > 0).length-10,
+      intlGigCount:data.filter((g) => g.promotedName.search(regexIntl) > -1 || (g.performersListJson != null && g.performersListJson.filter((p) => p.search(regexIntl) > -1).length > 0)).length
     })
   );
   await fs.cp("static/", "build/", {recursive:true});

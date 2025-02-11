@@ -27,13 +27,16 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" href="https://sydneymusic.net/favicon.png" />
+		<link rel="icon" href="https://sydneymusic.net/favicon.svg" type="image/svg+xml" />
     <link
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&display=swap"
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">    <script src="https://cdn.tailwindcss.com"></script>
+    <meta property="og:image" content="/assets/og.png" />
     <script src="section-toggles.js"></script>
-
+    <title>SydneyMusic.net: 2024 In Review</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body class="font-instrumentSans">
@@ -188,6 +191,14 @@
             <div>and <strong>{{venueCount}}</strong> other venues down below ...</div>
           </div>
         </div>
+        <div
+        class="relative bg-black rounded-bl-[4rem] rounded-tl-[4rem] rounded-tr-[4rem] p-8 hover:rounded-[4rem] transition-all duration-300"
+      >
+        <span class="text-4xl xl:text-7xl statistic">
+          {{intlGigCount.toLocaleString()}}
+        </span><span>gigs with one or more international artist ({{((intlGigCount / gigs.length) * 100) | round(2)}}%)</span>
+      </div>
+
       </div>
     </section>
 
@@ -224,8 +235,8 @@
       <p class="font-bold">
         We spend 60 hours a week maintaining this resource.
       </p>
-      <p>It's time well spent: our gig guide is read by 10,000 people every week &mdash; and our audience is growing quickly!</p>
-      <p>78% of our users say that they see more live music because of what we do. 79.4% say they've discovered new music through the guide.</p>
+      <p>It's time well spent: our gig guide is read by 9,000 people every week &mdash; and our audience is growing quickly!</p>
+      <p><strong>78% of our users say that they see more live music because of what we do.</strong> 79.4% say they've discovered new music through the guide.</p>
       <p>Our project is currently 100% crowd-supported, and we do not receive any government funding. To enable us to continue gathering this information and help Sydney get out supporting our scene, please consider <a href="https://patreon.com/sydneymusic">becoming a Patreon supporter</a> or <a href="https://store.sydneymusic.net/">buying some merch</a>.</p>
 
       <div class="flex flex-col gap-4 text-xl w-full items-center">
