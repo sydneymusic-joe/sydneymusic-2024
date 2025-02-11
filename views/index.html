@@ -33,14 +33,13 @@
     />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="section-toggles.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body class="font-instrumentSans">
     <div
       class="w-full h-screen bg-cover bg-center relative"
-      style="background-image: url('../assets/header.png')"
+      style="background-image: url('../assets/bg.jpeg')"
     >
       <div
         class="absolute top-8 right-8 md:top-12 md:right-12 w-[250px] md:w-[300px] lg:w-[400px]"
@@ -175,20 +174,8 @@
             ({{ v[1].count }}) {% if not loop.last %}, {% endif %} {% endfor %}
           </div>
         </div>
-        <div
-        class="relative bg-black p-8 rounded-tl-[4rem] rounded-br-[4rem] hover:rounded-[4rem] transition-all duration-300">
-          <div>
-            <h1>Venues by Capacity</h2>
-            <canvas id="venuesByCap"></canvas>
-          </div>
-        </div>
-        <div
-        class="relative col-span-3 bg-black p-8 rounded-tl-[4rem] rounded-br-[4rem] hover:rounded-[4rem] transition-all duration-300">
-          <div>
-            <h1>Venues by Location</h2>
-            <canvas id="venuesByArea"></canvas>
-          </div>
-        </div>
+        <div id="map"
+        class="relative bg-black col-span-3 p-8 rounded-tl-[4rem] rounded-br-[4rem] hover:rounded-[4rem] transition-all duration-300 pb-14"></div>
       </div>
     </section>
 
@@ -198,10 +185,16 @@
     <div
       class="lg:w-1/2 p-6 lg:border-y-2 border-black text-center space-y-6"
     >
-      <p>
-        It currently takes about 60 hours a week to maintain this resource.
+      <p class="font-bold">
+        We spend 60 hours a week maintaining this resource.
       </p>
-      <p>If you want to help us continue to gather this information and help Sydney get out supporting our scene, please consider <a href="https://patreon.com/sydneymusic">becoming a Patreon supporter</a> or <a href="https://store.sydneymusic.net/">buying some merch</a>.</p>
+      <p>It's time well spent: our gig guide is read by 10,000 people every week &mdash; and our audience is growing quickly!</p>
+      <p>Our project is currently 100% crowd-supported, and we do not receive any government funding. To enable us to continue gathering this information and help Sydney get out supporting our scene, please consider <a href="https://patreon.com/sydneymusic">becoming a Patreon supporter</a> or <a href="https://store.sydneymusic.net/">buying some merch</a>.</p>
+
+      <div class="grid h-48 grid-cols-2 place-content-center gap-4">
+        <a href="#" class="bg-black py-5 text-white rounded-2xl">Join our Patreon</a>
+        <a href="#" class="bg-black py-5 text-white rounded-2xl">Visit our Online Store</a>
+      </div>
     </div>
   </section>
 
@@ -267,28 +260,19 @@
         </div>
           
         <ul id="venue-list">
-          {% for venueName, gigsArr in sortedVenueGigs %}
+          {% for id, data in sortedVenueGigs %}
           <li>
             <div
               class="venue-item inline-block hover:bg-black hover:text-white cursor-pointer"
-              data-venue="{{ venueName }}"
+              data-venue="{{ id }}"
             >
-              <span class="font-medium text-2xl">{{ venueName }}</span>
-              ({{ gigsArr.length }})
+              <span class="font-medium text-2xl">{{ data.venueName }}</span>
+              ({{ data.count }})
             </div>
-            <div class="gigs-for-venue hidden m-2" data-venue="{{ venueName }}">
+            <div class="gigs-for-venue hidden m-2" data-venue="{{ data.venueName }}">
               <div
                 class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6"
               >
-                {% for g in gigsArr.slice(0, 24) %} {{ gigCard(g, false) }} {%
-                endfor %} {% if gigsArr.length > 24 %}
-                <div
-                  class="border border-black p-2 flex flex-col justify-center items-center cursor-pointer see-all-gigs"
-                  data-venue="{{ venueName }}"
-                >
-                  <span class="text-4xl font-bold">...</span>
-                </div>
-                {% endif %}
               </div>
             </div>
           </li>
@@ -310,57 +294,10 @@
         <div id="date-gigs" class="mt-6"></div>
       </div>
     </section>
-    <script>
-      window.ALL_GIGS = {{ gigs | json }};
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
+      <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-      const ctxArea = document.getElementById('venuesByArea');
-      const ctxCap = document.getElementById('venuesByCap');
-
-      new Chart(ctxArea, {
-        type: 'bar',
-        data: {
-          labels: {{ venuesByAreaKeys | json }},
-          datasets: [{
-            label: '# of Gigs',
-            data: {{ venuesByAreaValues | json }},
-            borderWidth: 0,
-            backgroundColor : '#ffffff'
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-
-      new Chart(ctxCap, {
-        type: 'bar',
-        data: {
-          labels: {{ venuesByCapKeys | json }},
-          datasets: [{
-            label: '# of Gigs',
-            data: {{ venuesByCapValues | json }},
-            borderWidth: 0,
-            backgroundColor : '#ffffff',
-            barThickness : 20
-          }]
-        },
-        options: {
-          plugins : {
-            legend : {
-              display : false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-    </script>
   </body>
 </html>

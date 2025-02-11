@@ -123,7 +123,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!gigsArray.length) {
       return `<p class="text-xl">No gigs :(</p>`;
     }
-    let html = `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">`;
+
+    let html =
+    gigsArray.length === 1 ? 
+    `<div class="w-full">` :
+    `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 w-full">`;
 
     gigsArray.forEach((g) => {
       html += `
@@ -143,6 +147,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="mt-auto text-lg opacity-60">
             <span>@</span>
             <span class="font-bold">${g.venue.venueName}</span>
+          </div>
+          <div class="mt-auto text-lg opacity-60">
+            <span>${new Date(g.gigStartDate).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+            })}</span>
           </div>
         </div>
     `;
@@ -207,4 +217,38 @@ document.addEventListener("DOMContentLoaded", () => {
       gigsContainer.innerHTML = buildVenueGigsHtml(allGigs, venueName, true);
     }
   });
+
+  let map;
+
+  function fetchPopupContent(id) {
+    const g = ALL_GIGS.find((el) => el.id === id);
+    return buildDateGigsHtml([g]);
+  }
+  
+  async function initMap() {
+    // Create the map centered on Sydney
+    map = L.map('map').setView([-33.8148, 151.0017 ], 11);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom : 19}).addTo(map);
+  
+    let grp = L.markerClusterGroup();
+    window.ALL_GIGS.forEach((el) => {
+      if (el.venue && el.venue.lat && el.venue.lon) {
+        let m = L.marker([el.venue.lat, el.venue.lon ]);
+        m.bindPopup(fetchPopupContent(el.id), {minWidth : 400});
+        grp.addLayer(m);
+      }
+    })
+    map.addLayer(grp);
+  }
+
+  fetch("/venues.json").then((response) => response.json().then((obj) => { window.ALL_VENUES = obj; }));
+  fetch("/allgigs.json")
+    .then((response) => response.json().then((obj) => window.ALL_GIGS = obj))
+    .then(() => {window.ALL_GIGS.forEach((el) => {
+      el.venue = ALL_VENUES.find((elV) => el.venue.id === elV.id);
+    })})
+    .then(() => { initMap(); });
+});
+
+document.addEventListener("DOMContentLoaded", function(arg) {
 });

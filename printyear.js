@@ -75,18 +75,14 @@ async function doIt() {
         isFree
         isPwyc
         venue {
-          venueName
-          capacity
-          address
-          suburb
-          postcode
-          url
-          slug
+          id
         }
       }
     `;
     iter++;
   }
+
+  const venues = JSON.parse(await fs.readFile("static/venues.json"));
 
   const page = await doQuery(`{ ${query} }`);
 
@@ -160,19 +156,7 @@ async function doIt() {
     ).length
   }));
 
-  const groupVenues = data.reduce((groupVenues, gig) => {
-    const venueName = gig.venue.venueName;
-    let v = getParameterCaseInsensitive(groupVenues, venueName);
-    if (!v) {
-      groupVenues[venueName] = gig.venue;
-      groupVenues[venueName].count = 0;
-      v = groupVenues[venueName];
-    }
-    v.count++;
-    return groupVenues;
-  }, {});
-
-  const sortedGroupVenues = Object.values(groupVenues).sort(
+  const sortedGroupVenues = Object.values(venues).sort(
     (a, b) => b.count - a.count
   );
 
@@ -216,22 +200,8 @@ async function doIt() {
     .sort(([aName, aGigs], [bName, bGigs]) => bGigs.length - aGigs.length)
     .splice(0, 600);
 
-  const venueGigs = {};
-
-  for (const gig of data) {
-    const vName = gig.venue.venueName;
-    if (!venueGigs[vName]) {
-      venueGigs[vName] = [];
-    }
-    venueGigs[vName].push(gig);
-  }
-
-  Object.values(venueGigs).forEach((gigs) => {
-    gigs.sort((a, b) => new Date(a.gigStartDate) - new Date(b.gigStartDate));
-  });
-
-  const sortedVenueGigs = Object.entries(venueGigs)
-    .sort(([vA, gigsA], [vB, gigsB]) => gigsB.length - gigsA.length)
+  const sortedVenueGigs = Object.entries(venues)
+    .sort(([vA, gigsA], [vB, gigsB]) => gigsB.count - gigsA.count)
     .slice(0, 100);
 
   let env = nj.configure("views", { autoescape: true });
@@ -249,10 +219,9 @@ async function doIt() {
     return nj.runtime.markSafe(jsonString);
   });
 
-  console.log(venuesByArea);
-
   await fs.mkdir("build", { recursive: true });
   await fs.cp("assets/", "build/assets/", {recursive:true});
+  await fs.writeFile("build/allgigs.json",JSON.stringify(data));
   await fs.writeFile(
     "build/index.html",
     nj.render("index.html", {
@@ -262,15 +231,10 @@ async function doIt() {
       gigsPerDayDates: Object.keys(groups),
       gigsPerDay: groupArrays,
       sortedArtistGigs,
-      sortedVenueGigs,
-      venuesByAreaKeys : venuesByArea.map(a=>a.areaName),
-      venuesByAreaValues : venuesByArea.map(a=>a.count),
-      venuesByCapKeys : Object.keys(venuesByCap),
-      venuesByCapValues : Object.values(venuesByCap)
+      sortedVenueGigs
     })
   );
-  await fs.copyFile("static/style.css", "build/style.css");
-  await fs.copyFile("static/section-toggles.js", "build/section-toggles.js");
+  await fs.cp("static/", "build/", {recursive:true});
 }
 
 doIt();
