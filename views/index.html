@@ -37,7 +37,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body class="font-instrumentSans">
-    <div
+    <div id="header"
       class="w-full h-screen bg-cover bg-center relative"
       style="background-image: url('../assets/1.jpeg')"
     >
@@ -53,13 +53,13 @@
       <div
         class="absolute md:items-end bottom-8 w-full px-8 text-white flex flex-col md:flex-row justify-between items-center"
       >
-        <div class="mb-4 md:mb-0 text-center md:text-left">
+        <div class="mb-4 md:mb-0 text-center md:text-left z-10">
           <div class="text-4xl lg:text-7xl">2024 In Review:</div>
           <div class="statistic text-2xl lg:text-4xl">
             WHAT WE'VE ALL BEEN UP TO
           </div>
         </div>
-        <ul class="flex justify-center space-x-5 mt-4 sm:mt-0">
+        <ul class="flex justify-center space-x-5 mt-4 sm:mt-0 z-10">
           <li>
             <a
               href="https://www.instagram.com/sydneymusicdotnet/"
@@ -120,6 +120,9 @@
         <p>Love,<br />Team SMn x</p>
       </div>
     </section>
+    <div class="text-center text-gray-500">
+      This retrospective was built by <a href="https://joe.hardy.id.au" target="_blank">Joe Hardy</a> (data analysis and hackery) and <a href="https://jackhall.info/" target="_blank">Jack Hall</a> (design and front-end)
+    </div>
   
     <section class="space-y-3 sm:px-10 lg:p-24 px-3">
       <div
@@ -176,9 +179,15 @@
         </div>
       </div>
     </section>
-    <div id="map"
-    class="my-10"></div>
 
+    <div class=" text-center">
+        <div class="statistic uppercase text-4xl">there is music in every corner of our city</div>
+        <div class="">(it's an aspiration as well as a reality)</div>
+    </div>
+    <div id="map"
+    class="my-20"></div>
+
+    <div class="text-center pb-6">(There's some really cool shit down below, but just quickly - if we can take a moment to talk about ourselves ...)</div>
     <section
     class="w-full flex items-center justify-center text-3xl"
   >
@@ -189,11 +198,12 @@
         We spend 60 hours a week maintaining this resource.
       </p>
       <p>It's time well spent: our gig guide is read by 10,000 people every week &mdash; and our audience is growing quickly!</p>
+      <p>78% of our users say that they see more live music because of what we do. 79.4% say they've discovered new music through the guide.</p>
       <p>Our project is currently 100% crowd-supported, and we do not receive any government funding. To enable us to continue gathering this information and help Sydney get out supporting our scene, please consider <a href="https://patreon.com/sydneymusic">becoming a Patreon supporter</a> or <a href="https://store.sydneymusic.net/">buying some merch</a>.</p>
 
-      <div class="grid grid-cols-2 place-content-center gap-4 text-xl">
-        <a href="#" class="bg-black py-5 text-white  rounded-[4rem]">Join our Patreon</a>
-        <a href="#" class="bg-black py-5 text-white  rounded-[4rem]">Visit our Online Store</a>
+      <div class="flex flex-col gap-4 text-xl w-full items-center">
+        <a href="#" class="block bg-black w-[50%] py-5 text-white  rounded-[4rem]">Join our Patreon</a>
+        <a href="#" class="block bg-black w-[50%] py-5 text-white  rounded-[4rem]">Visit our Online Store</a>
       </div>
 
       <p>And now read on to see the rest of what went on in 2024!</p>
@@ -202,6 +212,10 @@
 
 
     <section class="space-y-3 sm:px-10 lg:p-24 px-3">
+      <div>
+        <div class="statistic inline">2024 in a nutshell</div>
+        <div>According to the data we collected. This information was collected by <strong>Zion Garcia</strong>, <strong>Joe Hardy</strong>, <strong>Genvin In</strong>, <strong>Jess Lord</strong>, <strong>Caitlin Welsh</strong> and <strong>David James Young</strong>. Thank you to our many, many supporters - we are very grateful that we've been able to get this far!</div>
+      </div>
 
       <div class="pt-10">
         <div
@@ -225,6 +239,7 @@
       </div>
 
       <div id="acts-section" class="p-2 sm:p-8 mx-auto">
+
         <div class="mb-2">
           <span class="font-medium text-2xl bg-black text-white px-2">
             Top 100 acts
