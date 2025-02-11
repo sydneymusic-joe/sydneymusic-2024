@@ -231,7 +231,8 @@ async function doIt() {
       gigsPerDayDates: Object.keys(groups),
       gigsPerDay: groupArrays,
       sortedArtistGigs,
-      sortedVenueGigs
+      sortedVenueGigs,
+      venueCount : venues.length
     })
   );
   await fs.cp("static/", "build/", {recursive:true});

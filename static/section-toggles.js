@@ -231,7 +231,12 @@ document.addEventListener("DOMContentLoaded", () => {
   async function initMap() {
     // Create the map centered on Sydney
     map = L.map('map').setView([-33.8148, 151.0017 ], 11);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom : 19}).addTo(map);
+    L.tileLayer(
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {
+        maxZoom : 19, 
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
   
     let grp = L.markerClusterGroup();
     window.ALL_GIGS.forEach((el) => {
@@ -242,6 +247,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     map.addLayer(grp);
+    const heatPoints = window.ALL_VENUES.filter((v) => v.lat && v.lon)
+    .map(
+      (v) => {
+        return [v.lat, v.lon, v.count];
+      });
+    var heat = L.heatLayer(heatPoints, {minOpacity : 0.3});
+
+    const mapcluster = document.getElementById('mapcluster');
+    const mapheat = document.getElementById('mapheat');
+    mapcluster.addEventListener('click', (e) => {
+      e.preventDefault();
+      mapcluster.classList.add('bg-black', 'text-white');
+      mapheat.classList.remove('bg-black', 'text-white');
+      map.removeLayer(heat);
+      map.addLayer(grp);
+    });
+    mapheat.addEventListener('click', (e) => {
+      e.preventDefault();
+      mapheat.classList.add('bg-black', 'text-white');
+      mapcluster.classList.remove('bg-black', 'text-white');
+      map.removeLayer(grp);
+      map.addLayer(heat);
+    });
   }
 
   fetch("/venues.json").then((response) => response.json().then((obj) => { window.ALL_VENUES = obj; }));

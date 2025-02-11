@@ -120,11 +120,11 @@
         <p>Love,<br />Team SMn x</p>
       </div>
     </section>
-    <div class="text-center text-gray-500">
-      This retrospective was built by <a href="https://joe.hardy.id.au" target="_blank">Joe Hardy</a> (data analysis and hackery) and <a href="https://jackhall.info/" target="_blank">Jack Hall</a> (design and front-end)
+    <div class="text-center text-sm text-gray-500">
+      This retrospective was built by<br /><a href="https://joe.hardy.id.au" target="_blank">Joe Hardy</a> (data analysis and hackery)<br /><a href="https://jackhall.info/" target="_blank">Jack Hall</a> (design and front-end)
     </div>
   
-    <section class="space-y-3 sm:px-10 lg:p-24 px-3">
+    <section class="space-y-3 sm:px-10 p-24 px-3">
       <div
         class="grid md:grid-cols-3 grid-cols-2 w-full h-full gap-3 text-white text-2xl xl:text-4xl"
       >
@@ -143,12 +143,11 @@
           <div>
             <span>That's an average of</span>
             <span class="text-4xl xl:text-7xl statistic">
-              {{ (gigs.length / 365).toLocaleString() }}
+              {{ (gigs.length / 365) | round(2) }}
             </span>
             <div>gigs in Sydney per day</div>
           </div>
         </div>
-        <div class="hidden md:block"></div>
         <div
           class="relative bg-black rounded-bl-[4rem] rounded-tl-[4rem] rounded-tr-[4rem] p-8 hover:rounded-[4rem] transition-all duration-300"
         >
@@ -157,8 +156,19 @@
           </span>
           <span>
             of those gigs were free ({{ ((gigsFree /
-            gigs.length)*100).toLocaleString() }}%)
+            gigs.length)*100) | round }}%)
           </span>
+        </div>
+        <div
+          class="relative bg-black rounded-bl-[4rem] rounded-tl-[4rem] rounded-tr-[4rem] p-8 hover:rounded-[4rem] transition-all duration-300"
+        >
+          <span class="text-4xl xl:text-7xl statistic">
+            15%*
+          </span>
+          <span>
+            of gigs were submitted to us
+          </span>
+          <div class="text-xs">* extrapolated from data beginning July 7<br />(total number of conversations: 621)</div>
         </div>
         <div
           class="relative bg-black sm:row-span-2 lg:row-span-4 col-span-2 p-8 rounded-tl-[4rem] rounded-br-[4rem] hover:rounded-[4rem] transition-all duration-300 pb-14"
@@ -175,19 +185,36 @@
               {{ v[1].venueName }}
             </a>
             ({{ v[1].count }}) {% if not loop.last %}, {% endif %} {% endfor %}
+            <div>and <strong>{{venueCount}}</strong> other venues down below ...</div>
           </div>
         </div>
       </div>
     </section>
 
     <div class=" text-center">
+        <div class="flex place-content-center mb-4"><img src="assets/dancer-black.png" class="w-32" /></div>
         <div class="statistic uppercase text-4xl">there is music in every corner of our city</div>
         <div class="">(it's an aspiration as well as a reality)</div>
+        <div class="mt-20 mb-4 text-2xl"><strong>Here's where the shows happened:</strong></div>
+        <div class="mb-4">
+          <div
+          id="mapcluster"
+          class="inline-block bg-black text-white text-2xl md:text-4xl border-2 border-black rounded-[4rem] px-4 py-1 mb-2 cursor-pointer"
+        >
+          venue explorer
+        </div>
+        <div
+          id="mapheat"
+          class="inline-block text-2xl md:text-4xl border-2 border-black rounded-[4rem] px-4 py-1 mb-2 cursor-pointer"
+        >
+          heatmap
+        </div>
+        </div>
     </div>
     <div id="map"
-    class="my-20"></div>
+    class=""></div>
 
-    <div class="text-center pb-6">(There's some really cool shit down below, but just quickly - if we can take a moment to talk about ourselves ...)</div>
+    <div class="text-center pb-6 mt-20">(There's some really cool shit down below, but just quickly - if we can take a moment to talk about ourselves ...)</div>
     <section
     class="w-full flex items-center justify-center text-3xl"
   >
@@ -202,8 +229,8 @@
       <p>Our project is currently 100% crowd-supported, and we do not receive any government funding. To enable us to continue gathering this information and help Sydney get out supporting our scene, please consider <a href="https://patreon.com/sydneymusic">becoming a Patreon supporter</a> or <a href="https://store.sydneymusic.net/">buying some merch</a>.</p>
 
       <div class="flex flex-col gap-4 text-xl w-full items-center">
-        <a href="#" class="block bg-black w-[50%] py-5 text-white  rounded-[4rem]">Join our Patreon</a>
-        <a href="#" class="block bg-black w-[50%] py-5 text-white  rounded-[4rem]">Visit our Online Store</a>
+        <a href="#" class="btn-cta">Join our Patreon</a>
+        <a href="#" class="btn-cta">Visit our Online Store</a>
       </div>
 
       <p>And now read on to see the rest of what went on in 2024!</p>
@@ -213,7 +240,7 @@
 
     <section class="space-y-3 sm:px-10 lg:p-24 px-3">
       <div>
-        <div class="statistic inline">2024 in a nutshell</div>
+        <div class="statistic inline uppercase">2024 in a nutshell</div>
         <div>According to the data we collected. This information was collected by <strong>Zion Garcia</strong>, <strong>Joe Hardy</strong>, <strong>Genvin In</strong>, <strong>Jess Lord</strong>, <strong>Caitlin Welsh</strong> and <strong>David James Young</strong>. Thank you to our many, many supporters - we are very grateful that we've been able to get this far!</div>
       </div>
 
@@ -312,6 +339,6 @@
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
       <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
       <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
+      <script src="/leaflet-heat.js"></script>
   </body>
 </html>
