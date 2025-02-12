@@ -132,14 +132,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let html =
     gigsArray.length === 1 ? 
     `<div class="w-full">` :
-    `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 w-full">`;
+    `<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6 w-full">`;
 
     gigsArray.forEach((g) => {
       html += `
         <div class="border border-black p-3 flex flex-col">
           <div>
             <div class="mb-8">
-              <div class="font-bold text-xl">${g.promotedName}</div>
+              <div class="font-bold text-xl break-words">${g.promotedName}</div>
               ${
                 g.performersListJson && g.performersListJson.length
                   ? `<div class="text-sm line-clamp-4">
@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="border border-black p-3 flex flex-col">
           <div>
             <div class="mb-8">
-              <div class="font-bold text-xl">${g.promotedName}</div>
+              <div class="font-bold text-xl break-words">${g.promotedName}</div>
               ${
                 g.performersListJson && g.performersListJson.length
                   ? `<div class="text-sm line-clamp-4">
