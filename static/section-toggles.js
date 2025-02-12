@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
         `.gigs-for-artist[data-artist="${artist}"]`
       );
       if (!targetDiv) return;
-      const findArtist = window.ALL_GIGS.filter((g) => g.promotedName === artist || (g.performersListJson && g.performersListJson.includes(artist)));
+      const regexFind = new RegExp(`^(DJ )?${artist}`,"gi");
+      const findArtist = window.ALL_GIGS.filter((g) => g.promotedName.match(regexFind) || (g.performersListJson && g.performersListJson.filter((p) => p.match(regexFind)).length > 0));
       targetDiv.innerHTML = buildDateGigsHtml(findArtist);
       const wasHidden = targetDiv.classList.contains("hidden");
       closeAllArtistGigs();

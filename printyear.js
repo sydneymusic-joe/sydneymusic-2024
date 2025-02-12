@@ -170,17 +170,22 @@ async function doIt() {
   const artistGigs = {};
 
   function pushGig(artist, gig) {
-    if (!artistGigs[artist]) {
+    const aRe = new RegExp(`^${artist.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, "gi");
+    const result = Object.keys(artistGigs).filter((a) => a.search(aRe) > -1);
+    if (!result || result.length === 0) {
       artistGigs[artist] = [];
+      artistGigs[artist].push(gig);
     }
-    artistGigs[artist].push(gig);
+    else {
+      artistGigs[result[0]].push(gig);
+    }
   }
 
   // split out all artists
   for (const gig of data) {
     const performers = [...(gig.performersListJson ?? [])];
     if (!exclude.includes(gig.promotedName)) {
-      performers.push(gig.promotedName);
+      performers.push(gig.promotedName.trim());
     }
     for (let artist of performers) {
       artist = artist.trim();
@@ -232,7 +237,7 @@ async function doIt() {
       gigsPerDay: groupArrays,
       sortedArtistGigs,
       sortedVenueGigs,
-      venueCount : venues.filter((v) => v.count > 0).length-10,
+      venueCount : venues.filter((v) => v.count > 0).length,
       intlGigCount:data.filter((g) => g.promotedName.search(regexIntl) > -1 || (g.performersListJson != null && g.performersListJson.filter((p) => p.search(regexIntl) > -1).length > 0)).length
     })
   );
