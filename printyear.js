@@ -49,7 +49,9 @@ async function doIt() {
     "Hijinx Wednesdays",
     "Brett Whiteley Studio Sessions",
     "Fridays @ Lansdowne",
-    "LOCAL PRODUCE"
+    "LOCAL PRODUCE",
+    "SMALL FRY ROCK",
+    "Breaking Sound"
   ];
   const regexIntl = /\([A-Z]{2,3}\)/g;
   let cleanUp = [regexIntl, /\[.*\]/g, /DJ\s/g];
