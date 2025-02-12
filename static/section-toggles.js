@@ -70,11 +70,12 @@ document.addEventListener("DOMContentLoaded", () => {
   venueItems.forEach((item) => {
     item.addEventListener("click", () => {
       const venue = item.getAttribute("data-venue");
-      const targetDiv = document.querySelector(
-        `.gigs-for-venue[data-venue="${venue}"]`
+      const targetDivGrid = document.querySelector(
+        `.gigs-for-venue[data-venue="${venue}"] > div`
       );
+      const targetDiv = targetDivGrid.parentNode;
       if (!targetDiv) return;
-      targetDiv.innerHTML = buildDateGigsHtml(window.ALL_GIGS.filter((g) => g.venue && g.venue.id === venue));
+      targetDivGrid.outerHTML = buildDateGigsHtml(window.ALL_GIGS.filter((g) => g.venue && g.venue.id === venue));
       const wasHidden = targetDiv.classList.contains("hidden");
       closeAllVenueGigs();
       if (wasHidden) {

@@ -123,9 +123,8 @@
         class="lg:w-1/2 p-6 lg:border-y-2 border-black text-center space-y-6"
       >
         <p>
-          2024 was an amazing year for music in Sydney. We thought you might enjoy this opportunity to take a look back at the year that was.
+          2024 was an amazing year for music in Sydney. Enjoy this opportunity to take a look back at the year that was.
         </p>
-        <p>There are plenty of interesting insights to consider about what this information tells us about our city. We'd love to hear your thoughts!</p>
 
         <p>Love,<br />Team SMn x</p>
       </div>
@@ -141,7 +140,7 @@
         <div
           class="relative bg-black rounded-br-[4rem] rounded-bl-[4rem] rounded-tl-[4rem] p-8 hover:rounded-[4rem] transition-all duration-300"
         >
-          <div>We covered</div>
+          <div>We listed</div>
           <div class="text-4xl xl:text-7xl statistic font-light">
             {{ gigs.length.toLocaleString() }}
           </div>
@@ -212,7 +211,6 @@
     <div class=" text-center">
         <div class="flex place-content-center mb-4 storelink"><a href="https://store.sydneymusic.net"><img src="assets/dancer-black.png" class="w-32" /></a></div>
         <div class="statistic uppercase text-4xl">there is music in every corner of our city</div>
-        <div class="">(it's an aspiration as well as a reality)</div>
         <div class="mt-20 mb-4 text-2xl"><strong>Here's where the shows happened:</strong></div>
         <div class="mb-4">
           <div
@@ -240,7 +238,7 @@
       class="lg:w-1/2 p-6 lg:border-y-2 border-black text-center space-y-6"
     >
       <p class="font-bold">
-        We spend 60 hours a week maintaining this resource.
+        Our tiny team spends 60 hours a week maintaining this resource
       </p>
       <p>It's time well spent: our gig guide is read by 9,000 people every week &mdash; and our audience is growing quickly!</p>
       <p><strong>78% of our users say that they see more live music because of what we do.</strong> 79.4% say they discover new music through the guide.*</p>
@@ -331,6 +329,7 @@
               ({{ data.count }})
             </div>
             <div class="gigs-for-venue hidden m-2" data-venue="{{ data.id }}">
+              <p class="mb-2">Take a look at <a href="https://sydneymusic.net/gig-guide/venues/{{data.slug}}" target="_blank">{{data.venueName}}</a> on the <a href="https://sydneymusic.net/gig-guide/venues/" target="_blank">Venue Directory</a>.</p>
               <div
                 class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6"
               >
