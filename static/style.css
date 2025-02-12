@@ -73,7 +73,7 @@ a:hover {
 
 
 /* leaflet */
-#map {width : 100%; height : 600px}
+#map {width : 100%; height : 600px;}
 
 .marker-cluster-small {
 	background-color: #778972;
